@@ -26,19 +26,33 @@ fn handle_client_request(stream: &mut TcpStream, request: &str) {
     let lines: Vec<&str> = request.split("\r\n").collect();
     let request_line = lines[0];
     let words: Vec<&str> = request_line.split_whitespace().collect();
-    let request_target = words[1];
-    println!("request target: {request_target} size: {}", request_target.len());
-    if request_target.len() > 1 {
-        let result = stream.write_all(b"HTTP/1.1 404 Not Found\r\n\r\n");
-        match result {
-            Ok(_result) => println!("success"),
-            Err(e) => println!("error: {e}")
-        }
-    } else {
-        let result = stream.write_all(b"HTTP/1.1 200 OK\r\n\r\n");
+    let endpoint = words[1];
+    println!("endpoint: {endpoint} size: {}", endpoint.len());
+    let ep_elems: Vec<&str> = endpoint.split("/").collect();
+    for elems in &ep_elems {
+        println!("ep elems: {elems}");
+    }
+    if ep_elems[1] == "echo" && ep_elems.len() > 2 {
+        let client_str = ep_elems[2];
+        let response = format!("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}", client_str.len(), client_str);
+        println!("response: {response}");
+        let result = stream.write_all(response.as_bytes());
         match result {
             Ok(_result) => println!("success"),
             Err(e) => println!("error: {e}")
         }
     }
+    // if endpoint.len() > 1 {
+    //     let result = stream.write_all(b"HTTP/1.1 404 Not Found\r\n\r\n");
+    //     match result {
+    //         Ok(_result) => println!("success"),
+    //         Err(e) => println!("error: {e}")
+    //     }
+    // } else {
+    //     let result = stream.write_all(b"HTTP/1.1 200 OK\r\n\r\n");
+    //     match result {
+    //         Ok(_result) => println!("success"),
+    //         Err(e) => println!("error: {e}")
+    //     }
+    // }
 }
